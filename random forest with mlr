@@ -30,7 +30,8 @@ traintask <- makeClassifTask(data=train, target="respons_variable")
 testtask <- makeClassifTask(data=test, target="respons_variable")
 
 # Feature importance. This takes some time to calculate!
-feature_importance = generateFilterValuesData(traintask, method='rf.importance')
+feature_importance = generateFilterValuesData(traintask, method='randomForest.importance')
+
 as_tibble(feature_importance$data) %>% 
   mutate(name = fct_reorder(name, randomForest.importance)) %>% 
   ggplot(aes(name, randomForest.importance, fill=type)) +
