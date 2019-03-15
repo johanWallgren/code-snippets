@@ -1,0 +1,15 @@
+# Convert all char columns to factor
+# Requiers library(tidyverse)
+
+char2factor <- function(df){
+  
+  options(warn=-1) # No warnings
+  
+  char_columns <- df %>%
+    head(1) %>% # Select the top column
+    mutate_all(as.numeric) %>% # Converts all to numeric class
+    select_if(~ any(is.na(.))) %>% # Drops all columns that now contain NA
+    names() # Select only the column names in a list
+  
+  mutate_at(df, char_columns, ~(as.factor(.)))
+}
