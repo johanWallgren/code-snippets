@@ -103,7 +103,6 @@ rf.lrn$par.vals <- list(ntree=200L,
                         nodesize=40)
 
 # Train model
-rf.lrn <- makeLearner("classif.randomForest")
 rf_model <- train(learner=rf.lrn,
                   task=traintask)
 
