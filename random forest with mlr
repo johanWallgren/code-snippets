@@ -4,7 +4,7 @@
 
 # Requiers:
 # Tidy data in tibble named trainData, response variable is called respons_variable
-# No logical columna are allowed, convert to factor
+# No logical columns are allowed, convert to factor
 ################################################################################################
 library(tidyverse)
 library(parallelMap)
