@@ -1,0 +1,117 @@
+# 2019-03-15
+# From:
+# https://www.hackerearth.com/practice/machine-learning/machine-learning-algorithms/tutorial-random-forest-parameter-tuning-r/tutorial/
+
+# Requiers:
+# Tidy data in tibble named trainData, response variable is called respons_variable
+# No logical columna are allowed, convert to factor
+################################################################################################
+library(tidyverse)
+library(parallelMap)
+library(parallel)
+library(data.table)
+library(mlr)
+library(h2o)
+################################################################################################
+
+# Splitting trainData into test and train
+# Compare the error rate from traintask with error rate from testtask to see if out of sample validation is necessary.
+
+smp_size <- floor(0.75 * nrow(trainData))
+train_test_ind <- sample(seq_len(nrow(trainData)), size=smp_size)
+
+train <- trainData[train_test_ind, ] # For training
+test <- trainData[-train_test_ind, ] # For testing
+
+# create a task
+# This will drop empty factors which makes prediction to error!
+# Make sure that there are no empty factors in train or test
+traintask <- makeClassifTask(data=train, target="respons_variable") 
+testtask <- makeClassifTask(data=test, target="respons_variable")
+
+# Feature importance. This takes some time to calculate!
+feature_importance = generateFilterValuesData(traintask, method = 'rf.importance')
+as_tibble(feature_importance$data) %>% 
+  mutate(name = fct_reorder(name, randomForest.importance)) %>% 
+  ggplot(aes(name, randomForest.importance, fill = type)) +
+  geom_col() +
+  coord_flip() +
+  labs(title = 'Predictor importance',
+       x = '',
+       y = 'Random Forest Importance',
+       fill = 'Type')
+
+# set 5 fold cross validation
+rdesc <- makeResampleDesc("CV",iters=5L)
+
+# #set parallel backend (Windows)
+parallelStartSocket(cpus=detectCores()) # Uses all CPU's
+
+#make randomForest learner
+rf.lrn <- makeLearner("classif.randomForest")
+rf.lrn$par.vals <- list(ntree=100L, 
+                        importance=TRUE)
+
+# Train rf-learner
+rf_resmp <- resample(learner=rf.lrn,
+              task=traintask,
+              resampling=rdesc,
+              measures=list(tpr,fpr,fnr,fpr,acc),
+              show.info=TRUE)
+
+# tune cutoff if tf or fn are low
+rf.lrn$par.vals <- list(ntree=100L, 
+                        importance=TRUE, 
+                        cutoff=c(0.45,0.55))
+
+# Re-train learner
+rf_resmp <- resample(learner=rf.lrn,
+              task=traintask,
+              resampling=rdesc,
+              measures=list(tpr,fpr,fnr,fpr,acc),
+              show.info=TRUE)
+# Repeat with other cutoff settings to find best values
+
+# List all avilable tuning parameters
+getParamSet(rf.lrn)
+
+# set parameter space
+params <- makeParamSet(makeIntegerParam("mtry", lower=5, upper=15), # Values depending on how many predictors there are
+                       makeIntegerParam("nodesize", lower=10, upper=50)) 
+
+# set validation strategy, 5 fold cross validation (same as above)
+rdesc <- makeResampleDesc("CV",iters=5L)
+
+# set optimization technique
+ctrl <- makeTuneControlRandom(maxit=5L)
+
+# start tuning
+tune <- tuneParams(learner=rf.lrn,
+                   task=traintask,
+                   resampling=rdesc,
+                   measures=list(acc),
+                   par.set=params,
+                   control=ctrl,
+                   show.info=TRUE)
+
+# Train model
+rf.lrn$par.vals <- list(ntree=200L, 
+                        importance=TRUE, 
+                        cutoff=c(0.45,0.55),
+                        mtry=10,
+                        nodesize=40)
+
+# Train model
+rf.lrn <- makeLearner("classif.randomForest")
+rf_model <- train(learner=rf.lrn,
+                  task=traintask)
+
+# Predict on testtask
+prediction_raw <- predict(object=rf_model,
+                          task=testtask)
+
+prediction <- as_tibble(prediction_raw$data) %>%
+  select(-id) %>%
+  mutate(correct_prediction = ifelse(truth == response, 1, 0))
+
+sum(prediction$correct_prediction) / nrow(prediction)
