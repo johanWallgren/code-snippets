@@ -114,13 +114,13 @@ feature_importance <- bind_cols(tibble(names(feature_importance_raw$res)),
   arrange(desc(MeanDecreaseGini))
 
 feature_importance %>%
-  mutate(predictor = fct_reorder(predictor, MeanDecreaseGini)) %>% 
+  mutate(predictor=fct_reorder(predictor, MeanDecreaseGini)) %>% 
   ggplot(aes(predictor, MeanDecreaseGini)) +
   geom_col() +
   coord_flip() +
-  labs(title = 'Predictor importance',
-       x = '',
-       y = 'Mean Decrease Gini')
+  labs(title='Predictor importance',
+       x='',
+       y='Mean Decrease Gini')
 
 # Predict on testtask
 prediction_raw <- predict(object=rf_model,
