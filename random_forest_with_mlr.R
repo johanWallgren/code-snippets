@@ -106,6 +106,22 @@ rf.lrn <- makeLearner("classif.randomForest")
 rf_model <- train(learner=rf.lrn,
                   task=traintask)
 
+# Feature importance for trained model
+feature_importance_raw <- getFeatureImportance(rf_model)
+feature_importance <- bind_cols(tibble(names(feature_importance_raw$res)), 
+                                as_tibble(t(feature_importance_raw$res))) %>%
+  rename(predictor=`names(feature_importance_raw$res)`, MeanDecreaseGini=V1) %>%
+  arrange(desc(MeanDecreaseGini))
+
+feature_importance %>%
+  mutate(predictor = fct_reorder(predictor, MeanDecreaseGini)) %>% 
+  ggplot(aes(predictor, MeanDecreaseGini)) +
+  geom_col() +
+  coord_flip() +
+  labs(title = 'Predictor importance',
+       x = '',
+       y = 'Mean Decrease Gini')
+
 # Predict on testtask
 prediction_raw <- predict(object=rf_model,
                           task=testtask)
