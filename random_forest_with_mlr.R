@@ -30,16 +30,16 @@ traintask <- makeClassifTask(data=train, target="respons_variable")
 testtask <- makeClassifTask(data=test, target="respons_variable")
 
 # Feature importance. This takes some time to calculate!
-feature_importance = generateFilterValuesData(traintask, method = 'rf.importance')
+feature_importance = generateFilterValuesData(traintask, method='rf.importance')
 as_tibble(feature_importance$data) %>% 
   mutate(name = fct_reorder(name, randomForest.importance)) %>% 
-  ggplot(aes(name, randomForest.importance, fill = type)) +
+  ggplot(aes(name, randomForest.importance, fill=type)) +
   geom_col() +
   coord_flip() +
-  labs(title = 'Predictor importance',
-       x = '',
-       y = 'Random Forest Importance',
-       fill = 'Type')
+  labs(title='Predictor importance',
+       x='',
+       y='Random Forest Importance',
+       fill='Type')
 
 # set 5 fold cross validation
 rdesc <- makeResampleDesc("CV",iters=5L)
