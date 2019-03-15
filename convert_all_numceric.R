@@ -1,3 +1,5 @@
+library(tidyverse)
+
 # Requiers a data frame named df_raw 
 numeric_columns <-  df_raw %>%
   na.omit() %>% # make sure that the top column doesn't have nay NA's
