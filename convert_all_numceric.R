@@ -1,3 +1,4 @@
+# If all data is as char and some should be numeric
 library(tidyverse)
 
 # Requiers a data frame named df_raw 
