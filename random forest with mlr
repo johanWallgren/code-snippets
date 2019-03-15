@@ -94,9 +94,22 @@ tune <- tuneParams(learner=rf.lrn,
                    par.set=params,
                    control=ctrl,
                    show.info=TRUE)
+                   
+# Resample with more trees with tuned parameters for verification
+rf.lrn$par.vals <- list(ntree=500L, 
+                        importance=TRUE, 
+                        cutoff=c(0.45,0.55),
+                        mtry=10,
+                        nodesize=40)
 
-# Train model
-rf.lrn$par.vals <- list(ntree=200L, 
+r <- resample(learner=rf.lrn,
+              task=traintask,
+              resampling=rdesc,
+              measures=list(tpr,fpr,fnr,fpr,acc),
+              show.info=TRUE)                   
+
+# Train model (same settings as above)
+rf.lrn$par.vals <- list(ntree=500L, 
                         importance=TRUE, 
                         cutoff=c(0.45,0.55),
                         mtry=10,
