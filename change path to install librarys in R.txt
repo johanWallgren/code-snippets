@@ -1,0 +1,37 @@
+EN
+
+Go to:
+Control panel
+System and security
+System
+
+Select:
+Advanced system settings
+Environment variables
+
+Create or update user variable 
+R_LIBS_USER
+
+Value
+C:\R\librarys
+
+Restart R Studio
+
+SE
+
+Gå til:
+Kontrollpanelen
+System och säkerhet
+System
+
+Välj:
+Avancerade systeminställningar
+Miljövariabler
+
+Skapa eller uppdatera användarvariabeln 
+R_LIBS_USER
+
+Med värde
+C:\R\librarys
+
+Starta om R Studio
